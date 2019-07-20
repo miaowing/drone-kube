@@ -1,6 +1,9 @@
 kind: pipeline
 name: drone_kube_build
 
+workspace:
+  base: /go
+
 trigger:
   ref:
     - refs/heads/master
