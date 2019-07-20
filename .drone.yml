@@ -1,8 +1,13 @@
-workspace:
-  base: /go
+kind: pipeline
+name: drone_kube_build
 
-pipeline:
-  test:
+trigger:
+  ref:
+    - refs/heads/master
+    - refs/tags/v*
+
+steps:
+  - name: build_source_code
     image: golang:1.6
     environment:
       - CGO_ENABLED=0
@@ -11,16 +16,12 @@ pipeline:
       - go test -cover -coverprofile=coverage.out
       - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
 
-  latest:
+  - name: build_docker_image
     image: plugins/docker
-    repo: vallard/drone-kube
-    tags: [ "latest", "1.0", "1" ]
-    when:
-      branch: master
-      event: push
-
-plugin:
-  name: Kube
-  desc: Update Deployments on kubernetes
-  type: deploy
-  image: vallard/drone-kube
+    repo: zfeng/drone-kube
+    settings:
+      auto_tag: true
+      username:
+        from_secret: docker_repository_username
+      password:
+        from_secret: docker_repository_password

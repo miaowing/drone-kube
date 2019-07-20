@@ -4,17 +4,17 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/api/apps/v1beta1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"log"
 	"time"
 
+	"github.com/ghodss/yaml"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	utilyaml "k8s.io/kubernetes/pkg/util/yaml"
 )
 
 type (
@@ -87,14 +87,14 @@ func (p Plugin) Exec() error {
 		return err
 	}
 	// convert txt back to []byte and convert to json
-	json, err := utilyaml.ToJSON([]byte(txt))
+	json, err := yaml.YAMLToJSON([]byte(txt))
 	if err != nil {
 		return err
 	}
 
 	var dep v1beta1.Deployment
 
-	e := runtime.DecodeInto(api.Codecs.UniversalDecoder(), json, &dep)
+	e := runtime.DecodeInto(scheme.Codecs.UniversalDecoder(), json, &dep)
 	if e != nil {
 		log.Fatal("Error decoding yaml file to json", e)
 	}
@@ -105,11 +105,11 @@ func (p Plugin) Exec() error {
 	}
 	if oldDep.ObjectMeta.Name == dep.ObjectMeta.Name {
 		// update the existing deployment, ignore the deployment that it comes back with
-		_, err = clientset.ExtensionsV1beta1().Deployments(p.Config.Namespace).Update(&dep)
+		_, err = clientset.AppsV1beta1().Deployments(p.Config.Namespace).Update(&dep)
 		return err
 	}
 	// create the new deployment since this never existed.
-	_, err = clientset.ExtensionsV1beta1().Deployments(p.Config.Namespace).Create(&dep)
+	_, err = clientset.AppsV1beta1().Deployments(p.Config.Namespace).Create(&dep)
 
 	return err
 }
@@ -135,7 +135,7 @@ func findDeployment(depName string, namespace string, c *kubernetes.Clientset) (
 func listDeployments(clientset *kubernetes.Clientset, namespace string) ([]v1beta1.Deployment, error) {
 	// docs on this:
 	// https://github.com/kubernetes/client-go/blob/master/pkg/apis/extensions/types.go
-	deployments, err := clientset.ExtensionsV1beta1().Deployments(namespace).List(v1.ListOptions{})
+	deployments, err := clientset.AppsV1beta1().Deployments(namespace).List(v1.ListOptions{})
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -159,7 +159,7 @@ func (p Plugin) createKubeClient() (*kubernetes.Clientset, error) {
 	ca, err := base64.StdEncoding.DecodeString(p.Config.Ca)
 	config := clientcmdapi.NewConfig()
 	config.Clusters["drone"] = &clientcmdapi.Cluster{
-		Server: p.Config.Server,
+		Server:                   p.Config.Server,
 		CertificateAuthorityData: ca,
 	}
 	config.AuthInfos["drone"] = &clientcmdapi.AuthInfo{
@@ -185,7 +185,7 @@ func (p Plugin) createKubeClient() (*kubernetes.Clientset, error) {
 // Just an example from the client specification.  Code not really used.
 func watchPodCounts(clientset *kubernetes.Clientset) {
 	for {
-		pods, err := clientset.Core().Pods("").List(v1.ListOptions{})
+		pods, err := clientset.CoreV1().Pods("").List(v1.ListOptions{})
 		if err != nil {
 			log.Fatal(err.Error())
 		}

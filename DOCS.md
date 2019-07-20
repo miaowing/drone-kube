@@ -12,31 +12,35 @@ The advantages of this plugin is that the ```deployment.yaml``` file can be a te
 Basic example: 
 
 ```yaml
-pipeline:
-  deploy:
-  	 image: vallard/drone-kube
-     template: deployment.yaml
+steps:
+  - name: deploy
+  	image: zfeng/drone-kube
+    template: deployment.yaml
 ```
 
 Example configuration with non-default namespace:
 
 ```diff
-pipeline:
-  kube:
-  	image: vallard/drone-kube
-    template: deployment.yaml
-+   namespace: mynamespace
+steps:
+  - name: deploy
+  	image: zfeng/drone-kube
+  	settings:
+      template: deployment.yaml
++     namespace: mynamespace
 ```
 
 You can also specify the server in the configuration as well.  It could alternatively be specified as an environment variable as shown in the next section. 
 
 ```diff
-pipeline:
-  kubernetes:
-  	image: vallard/drone-kube
-    template: deployment.yaml
-+   namespace: mynamespace
-+   server: https://10.93.234.28:6433
+steps:
+  - name: deploy
+  	image: zfeng/drone-kube
+  	settings:
+      template: deployment.yaml
++     namespace: mynamespace
++     server: https://10.93.234.28:6433
++     token: xxxxx
++     ca: xxxx
 ```
 
 ## Secrets
