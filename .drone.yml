@@ -6,6 +6,9 @@ trigger:
     - refs/heads/master
     - refs/tags/v*
 
+clone:
+  depth: 1
+
 steps:
   - name: build_source_code
     image: golang:1.6
