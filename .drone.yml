@@ -10,7 +10,7 @@ steps:
   - name: build_source_code
     image: golang:1.6
     environment:
-      - CGO_ENABLED=0
+      CGO_ENABLED: 0
     commands:
       - go vet
       - go test -cover -coverprofile=coverage.out
