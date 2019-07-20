@@ -12,6 +12,9 @@ clone:
 steps:
   - name: build_source_code
     image: golang:1.6
+    volumes:
+      - name: deps
+        path: /go
     environment:
       CGO_ENABLED: 0
     commands:
@@ -28,3 +31,7 @@ steps:
         from_secret: docker_repository_username
       password:
         from_secret: docker_repository_password
+
+volumes:
+  - name: deps
+    temp: {}
