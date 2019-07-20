@@ -3,6 +3,7 @@ name: drone_kube_build
 
 workspace:
   base: /go
+  path: src/github.com/miaowing/drone-kube
 
 trigger:
   ref:
