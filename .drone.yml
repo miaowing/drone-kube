@@ -15,7 +15,7 @@ clone:
 
 steps:
   - name: build_source_code
-    image: golang:1.6
+    image: golang:1.12.5
     environment:
       CGO_ENABLED: 0
     commands:
