@@ -25,8 +25,8 @@ steps:
 
   - name: build_docker_image
     image: plugins/docker
-    repo: zfeng/drone-kube
     settings:
+      repo: zfeng/drone-kube
       auto_tag: true
       username:
         from_secret: docker_repository_username
